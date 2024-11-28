@@ -12,6 +12,10 @@
     "prepare": "npm run build",
     "test": "jest"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Valentine8342/expo-dynamic-fonts.git"
+  },
   "keywords": [
     "react-native",
     "expo",
@@ -31,6 +35,10 @@
   ],
   "author": "Mauro Garcia",
   "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Valentine8342/expo-dynamic-fonts/issues"
+  },
+  "homepage": "https://github.com/Valentine8342/expo-dynamic-fonts#readme",
   "peerDependencies": {
     "expo-font": "*",
     "react": "18.2.0",
