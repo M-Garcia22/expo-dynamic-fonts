@@ -1,5 +1,5 @@
 {
-  "name": "react-native-google-fonts-loader",
+  "name": "react-native-font-loader",
   "version": "1.0.0",
   "description": "A React Native package to dynamically load Google Fonts",
   "main": "src/index.ts",

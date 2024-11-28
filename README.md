@@ -1,6 +1,6 @@
-# expo-font-loader
+# React Native Font Loader
 
-A powerful React Native package for dynamically loading and using Google Fonts in your Expo application with ease.
+A powerful React Native package for dynamically loading and using Google Fonts in your React Native application with ease.
 
 ## Table of Contents
 
@@ -20,22 +20,22 @@ A powerful React Native package for dynamically loading and using Google Fonts i
 
 ## Installation
 
-To get started with `expo-font-loader`, follow these steps:
+To get started with `react-native-font-loader`, follow these steps:
 
 1. **Install the package:**
 
    ```sh
-   npm install expo-font-loader
+   npm install react-native-font-loader
    # or
-   yarn add expo-font-loader
+   yarn add react-native-font-loader
    ```
 
 2. **Install peer dependencies:**
 
    ```sh
-   npm install expo-font react react-native
+   npm install react-native-webview react react-native
    # or
-   yarn add expo-font react react-native
+   yarn add react-native-webview react react-native
    ```
 
 ## Usage
@@ -47,7 +47,7 @@ Import and use the `Text` component with the `font` prop:
 ```tsx
 import React from 'react';
 import { View } from 'react-native';
-import { Text } from 'expo-font-loader';
+import { Text } from 'react-native-font-loader';
 
 const App = () => {
   return (
@@ -72,7 +72,7 @@ Use the `createFontComponent` function to create a custom component for a specif
 ```tsx
 import React from 'react';
 import { View } from 'react-native';
-import { createFontComponent } from 'expo-font-loader';
+import { createFontComponent } from 'react-native-font-loader';
 
 const RobotoText = createFontComponent('Roboto');
 const OpenSansText = createFontComponent('Open Sans');
@@ -96,7 +96,7 @@ For more control over font loading, use the `useFont` hook:
 ```tsx
 import React from 'react';
 import { View, Text as RNText } from 'react-native';
-import { useFont } from 'expo-font-loader';
+import { useFont } from 'react-native-font-loader';
 
 const App = () => {
   const robotoLoaded = useFont('Roboto');
@@ -151,11 +151,11 @@ const fontLoaded = useFont('Roboto');
 
 ## How it works
 
-The `expo-font-loader` package simplifies the process of using Google Fonts in your Expo application:
+The `react-native-font-loader` package simplifies the process of using Google Fonts in your React Native application:
 
 1. It accepts a Google Font name through the `font` prop, `createFontComponent` function, or `useFont` hook.
 2. The package fetches the font from the Google Fonts API.
-3. It then loads the font using `expo-font`.
+3. It then loads the font using a WebView component.
 4. Once loaded, the font is applied to the text.
 5. Loaded fonts are cached to prevent unnecessary reloading and improve performance.
 
@@ -168,7 +168,7 @@ You can load multiple fonts simultaneously:
 ```tsx
 import React from 'react';
 import { View } from 'react-native';
-import { Text, useFont } from 'expo-font-loader';
+import { Text, useFont } from 'react-native-font-loader';
 
 const App = () => {
   const [robotoLoaded, openSansLoaded] = useFont(['Roboto', 'Open Sans']);
@@ -217,7 +217,7 @@ If you encounter issues:
 
 ## Contributing
 
-We welcome contributions to `expo-font-loader`! Here's how you can help:
+We welcome contributions to `react-native-font-loader`! Here's how you can help:
 
 1. Fork the repository.
 2. Create a new branch for your feature or bug fix.
@@ -229,3 +229,4 @@ Please ensure your code adheres to the existing style and includes appropriate t
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
