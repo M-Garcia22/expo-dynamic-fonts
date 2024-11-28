@@ -1,7 +1,7 @@
 {
-  "name": "rn-font-loader",
+  "name": "expo-dynamic-fonts",
   "version": "1.0.0",
-  "description": "A React Native package to dynamically load Google Fonts",
+  "description": "A powerful and flexible React Native package for dynamically loading and using Google Fonts in Expo applications, with built-in caching and TypeScript support",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "files": [
@@ -16,10 +16,21 @@
     "react-native",
     "expo",
     "google-fonts",
-    "font-loader"
+    "font-loader",
+    "dynamic-fonts",
+    "typography",
+    "mobile",
+    "ios",
+    "android",
+    "custom-fonts",
+    "web-fonts",
+    "font-management",
+    "typescript",
+    "performance",
+    "caching"
   ],
   "author": "Mauro Garcia",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "peerDependencies": {
     "expo-font": "*",
     "react": "18.2.0",

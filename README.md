@@ -1,6 +1,6 @@
-# React Native Font Loader
+# Expo Dynamic Fonts
 
-A powerful React Native package for dynamically loading and using Google Fonts in your React Native application with ease.
+A powerful Expo package for dynamically loading and using Google Fonts in your Expo application with ease.
 
 ## Table of Contents
 
@@ -20,22 +20,22 @@ A powerful React Native package for dynamically loading and using Google Fonts i
 
 ## Installation
 
-To get started with `react-native-font-loader`, follow these steps:
+To get started with `expo-dynamic-fonts`, follow these steps:
 
 1. **Install the package:**
 
    ```sh
-   npm install react-native-font-loader
+   npm install expo-dynamic-fonts
    # or
-   yarn add react-native-font-loader
+   yarn add expo-dynamic-fonts
    ```
 
 2. **Install peer dependencies:**
 
    ```sh
-   npm install react-native-webview react react-native
+   npm install expo-web-browser expo react react-native
    # or
-   yarn add react-native-webview react react-native
+   yarn add expo-web-browser expo react react-native
    ```
 
 ## Usage
@@ -47,7 +47,7 @@ Import and use the `Text` component with the `font` prop:
 ```tsx
 import React from 'react';
 import { View } from 'react-native';
-import { Text } from 'react-native-font-loader';
+import { Text } from 'expo-dynamic-fonts';
 
 const App = () => {
   return (
@@ -72,7 +72,7 @@ Use the `createFontComponent` function to create a custom component for a specif
 ```tsx
 import React from 'react';
 import { View } from 'react-native';
-import { createFontComponent } from 'react-native-font-loader';
+import { createFontComponent } from 'expo-dynamic-fonts';
 
 const RobotoText = createFontComponent('Roboto');
 const OpenSansText = createFontComponent('Open Sans');
@@ -96,7 +96,7 @@ For more control over font loading, use the `useFont` hook:
 ```tsx
 import React from 'react';
 import { View, Text as RNText } from 'react-native';
-import { useFont } from 'react-native-font-loader';
+import { useFont } from 'expo-dynamic-fonts';
 
 const App = () => {
   const robotoLoaded = useFont('Roboto');
@@ -151,11 +151,11 @@ const fontLoaded = useFont('Roboto');
 
 ## How it works
 
-The `react-native-font-loader` package simplifies the process of using Google Fonts in your React Native application:
+The `expo-dynamic-fonts` package simplifies the process of using Google Fonts in your Expo application:
 
 1. It accepts a Google Font name through the `font` prop, `createFontComponent` function, or `useFont` hook.
 2. The package fetches the font from the Google Fonts API.
-3. It then loads the font using a WebView component.
+3. It then loads the font using Expo's WebBrowser component.
 4. Once loaded, the font is applied to the text.
 5. Loaded fonts are cached to prevent unnecessary reloading and improve performance.
 
@@ -168,7 +168,7 @@ You can load multiple fonts simultaneously:
 ```tsx
 import React from 'react';
 import { View } from 'react-native';
-import { Text, useFont } from 'react-native-font-loader';
+import { Text, useFont } from 'expo-dynamic-fonts';
 
 const App = () => {
   const [robotoLoaded, openSansLoaded] = useFont(['Roboto', 'Open Sans']);
@@ -217,16 +217,30 @@ If you encounter issues:
 
 ## Contributing
 
-We welcome contributions to `react-native-font-loader`! Here's how you can help:
+We welcome contributions to `expo-dynamic-fonts`! Here's how you can help:
 
-1. Fork the repository.
+1. Clone the main repository.
 2. Create a new branch for your feature or bug fix.
 3. Make your changes and commit them with a clear message.
-4. Push your changes and create a pull request.
+4. Push your changes to the main repository and create a pull request.
 
-Please ensure your code adheres to the existing style and includes appropriate tests.
+Please ensure your code adheres to the existing style and includes appropriate tests. We encourage direct contributions to the main repository rather than creating separate forks.
+
+Before starting work on a significant change, please open an issue to discuss your proposed modifications. This helps ensure your time is well spent and that your contribution aligns with the project's goals.
+
+By contributing to this project, you agree that your contributions will be licensed under the same AGPL-3.0 license that covers the project.
+
+For any questions about contributing, please open an issue in the project repository.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). This means:
+
+1. You can use this package in your projects, including commercial ones.
+2. If you modify this package, you must distribute your modifications under the same AGPL-3.0 license.
+3. You cannot create and distribute closed-source versions of this package.
+
+We encourage contributions to the main repository rather than creating separate forks. 
+
+For any questions about licensing or usage, please open an issue in the project repository.
 
