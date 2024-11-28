@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useFont = exports.createFontComponent = exports.Text = void 0;
+require("./utils/suppressFontWarnings");
 var Text_1 = require("./components/Text");
 Object.defineProperty(exports, "Text", { enumerable: true, get: function () { return Text_1.Text; } });
 Object.defineProperty(exports, "createFontComponent", { enumerable: true, get: function () { return Text_1.createFontComponent; } });
