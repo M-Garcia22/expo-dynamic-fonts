@@ -154,10 +154,11 @@ const fontLoaded = useFont('Roboto');
 The `expo-dynamic-fonts` package simplifies the process of using Google Fonts in your Expo application:
 
 1. It accepts a Google Font name through the `font` prop, `createFontComponent` function, or `useFont` hook.
-2. The package fetches the font from the Google Fonts API.
-3. It then loads the font using Expo's WebBrowser component.
-4. Once loaded, the font is applied to the text.
-5. Loaded fonts are cached to prevent unnecessary reloading and improve performance.
+2. The package fetches the font CSS from the Google Fonts API.
+3. It extracts the font URL from the CSS.
+4. It then loads the font using `expo-font`'s `loadAsync` method.
+5. Once loaded, the font is applied to the text.
+6. Loaded fonts are cached to prevent unnecessary reloading and improve performance.
 
 ## Advanced Usage
 
