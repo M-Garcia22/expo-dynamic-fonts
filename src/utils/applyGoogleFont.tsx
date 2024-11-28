@@ -32,6 +32,7 @@ export const useFont = (fontFamily: string): boolean => {
 
   useEffect(() => {
     if (fontFamily) {
+      setFontLoaded(false);
       loadFont(fontFamily)
         .then(() => setFontLoaded(true))
         .catch(() => setFontLoaded(false));

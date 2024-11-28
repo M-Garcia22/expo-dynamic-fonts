@@ -61,6 +61,7 @@ const useFont = (fontFamily) => {
     const [fontLoaded, setFontLoaded] = (0, react_1.useState)(false);
     (0, react_1.useEffect)(() => {
         if (fontFamily) {
+            setFontLoaded(false);
             loadFont(fontFamily)
                 .then(() => setFontLoaded(true))
                 .catch(() => setFontLoaded(false));

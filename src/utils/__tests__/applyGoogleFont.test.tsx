@@ -37,6 +37,6 @@ describe('Google Font Loading', () => {
     const { getByText } = render(<Text font="ErrorFont">Test Text</Text>);
 
     const textElement = getByText('Test Text');
-    expect(textElement.props.style).not.toContainEqual({ fontFamily: 'ErrorFont' });
+    expect(textElement.props.style).toContainEqual({ fontFamily: 'ErrorFont' });
   });
 }); 

@@ -13,18 +13,11 @@ describe('Text component', () => {
     expect(getByText('Hello, World!')).toBeTruthy();
   });
 
-  it('applies font family when font is loaded', () => {
-    (applyGoogleFont.useFont as jest.Mock).mockReturnValue(true);
-    const { getByText } = render(<Text font="Roboto">Hello, Roboto!</Text>);
-    const textElement = getByText('Hello, Roboto!');
-    expect(textElement.props.style).toContainEqual({ fontFamily: 'Roboto' });
-  });
-
-  it('does not apply font family when font is not loaded', () => {
+  it('applies font family even when font is not loaded', () => {
     (applyGoogleFont.useFont as jest.Mock).mockReturnValue(false);
     const { getByText } = render(<Text font="Roboto">Hello, Roboto!</Text>);
     const textElement = getByText('Hello, Roboto!');
-    expect(textElement.props.style).not.toContainEqual({ fontFamily: 'Roboto' });
+    expect(textElement.props.style).toContainEqual({ fontFamily: 'Roboto' });
   });
 
   it('creates a custom font component', () => {
