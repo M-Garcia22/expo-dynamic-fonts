@@ -32,41 +32,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.applyGoogleFont = void 0;
-const react_1 = __importStar(require("react"));
-const react_native_1 = require("react-native");
+exports.useFont = void 0;
+const react_1 = require("react");
 const Font = __importStar(require("expo-font"));
-const applyGoogleFont = (fontFamily) => {
-    const FontComponent = (props) => {
-        const [fontLoaded, setFontLoaded] = (0, react_1.useState)(false);
-        (0, react_1.useEffect)(() => {
-            let isMounted = true;
-            function loadFont() {
-                return __awaiter(this, void 0, void 0, function* () {
-                    try {
-                        yield Font.loadAsync({
-                            [fontFamily]: `https://fonts.googleapis.com/css2?family=${fontFamily.replace(' ', '+')}`,
-                        });
-                        if (isMounted) {
-                            setFontLoaded(true);
-                        }
-                    }
-                    catch (error) {
-                        console.error(`Failed to load font ${fontFamily}:`, error);
-                    }
-                });
-            }
-            loadFont();
-            return () => {
-                isMounted = false;
-            };
-        }, []);
-        if (!fontLoaded) {
-            return null;
+const GOOGLE_FONTS_API = 'https://fonts.googleapis.com/css2?family=';
+const fontCache = {};
+const loadFont = (fontFamily) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    if (fontCache[fontFamily]) {
+        return;
+    }
+    try {
+        const response = yield fetch(`${GOOGLE_FONTS_API}${fontFamily}`);
+        const css = yield response.text();
+        const fontUrl = (_a = css.match(/url\((.*?)\)/)) === null || _a === void 0 ? void 0 : _a[1];
+        if (!fontUrl) {
+            throw new Error(`Could not extract font URL for ${fontFamily}`);
         }
-        return <react_native_1.Text {...props} style={[{ fontFamily }, props.style]}/>;
-    };
-    return FontComponent;
+        yield Font.loadAsync({ [fontFamily]: fontUrl });
+        fontCache[fontFamily] = true;
+    }
+    catch (error) {
+        console.error(`Failed to load font ${fontFamily}:`, error);
+        throw error;
+    }
+});
+const useFont = (fontFamily) => {
+    const [fontLoaded, setFontLoaded] = (0, react_1.useState)(false);
+    (0, react_1.useEffect)(() => {
+        if (fontFamily) {
+            loadFont(fontFamily)
+                .then(() => setFontLoaded(true))
+                .catch(() => setFontLoaded(false));
+        }
+    }, [fontFamily]);
+    return fontLoaded;
 };
-exports.applyGoogleFont = applyGoogleFont;
-exports.default = exports.applyGoogleFont;
+exports.useFont = useFont;

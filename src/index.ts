@@ -1,2 +1,3 @@
-export { default as GoogleFontLoader } from './components/GoogleFontLoader';
-export { default as applyGoogleFont } from './utils/applyGoogleFont'; 
+export { Text, createFontComponent } from './components/Text';
+export { useFont } from './utils/applyGoogleFont';
+ 

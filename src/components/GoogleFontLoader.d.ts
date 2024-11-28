@@ -1,7 +1,7 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 interface GoogleFontLoaderProps {
     fontFamily: string;
-    children: ReactNode | (() => ReactNode);
+    children: React.ReactNode;
 }
 declare const GoogleFontLoader: React.FC<GoogleFontLoaderProps>;
 export default GoogleFontLoader;
