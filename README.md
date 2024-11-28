@@ -95,7 +95,7 @@ For more control over font loading, use the `useFont` hook:
 
 ```tsx
 import React from 'react';
-import { View, Text as RNText } from 'react-native';
+import { View, Text } from 'react-native';
 import { useFont } from 'expo-dynamic-fonts';
 
 const App = () => {
@@ -103,17 +103,17 @@ const App = () => {
   const openSansLoaded = useFont('Open Sans');
 
   if (!robotoLoaded || !openSansLoaded) {
-    return <View><RNText>Loading fonts...</RNText></View>;
+    return <View><Text>Loading fonts...</Text></View>;
   }
 
   return (
     <View className="flex-1 justify-center items-center">
-      <RNText style={{ fontFamily: 'Open Sans' }} className="text-lg">
+      <Text style={{ fontFamily: 'Open Sans' }} className="text-lg">
         Hello, Open Sans!
-      </RNText>
-      <RNText style={{ fontFamily: 'Roboto' }} className="text-xl mt-4">
+      </Text>
+      <Text style={{ fontFamily: 'Roboto' }} className="text-xl mt-4">
         Hello, Roboto!
-      </RNText>
+      </Text>
     </View>
   );
 };
