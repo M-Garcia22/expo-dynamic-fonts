@@ -33,9 +33,9 @@ To get started with `expo-dynamic-fonts`, follow these steps:
 2. **Install peer dependencies:**
 
    ```sh
-   npm install expo-web-browser expo react react-native
+   npm install expo-font expo react react-native
    # or
-   yarn add expo-web-browser expo react react-native
+   yarn add expo-font expo react react-native
    ```
 
 ## Usage
