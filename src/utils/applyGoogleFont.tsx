@@ -1,41 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { Text, TextProps } from 'react-native';
+import { useState, useEffect } from 'react';
 import * as Font from 'expo-font';
 
-export const applyGoogleFont = (fontFamily: string) => {
-  const FontComponent: React.FC<TextProps> = (props) => {
-    const [fontLoaded, setFontLoaded] = useState(false);
+const GOOGLE_FONTS_API = 'https://fonts.googleapis.com/css2?family=';
 
-    useEffect(() => {
-      let isMounted = true;
-      async function loadFont() {
-        try {
-          await Font.loadAsync({
-            [fontFamily]: `https://fonts.googleapis.com/css2?family=${fontFamily.replace(' ', '+')}`,
-          });
-          if (isMounted) {
-            setFontLoaded(true);
-          }
-        } catch (error) {
-          console.error(`Failed to load font ${fontFamily}:`, error);
-        }
-      }
+const fontCache: { [key: string]: boolean } = {};
 
-      loadFont();
+const loadFont = async (fontFamily: string): Promise<void> => {
+  if (fontCache[fontFamily]) {
+    return;
+  }
 
-      return () => {
-        isMounted = false;
-      };
-    }, []);
+  try {
+    const response = await fetch(`${GOOGLE_FONTS_API}${fontFamily}`);
+    const css = await response.text();
+    const fontUrl = css.match(/url\((.*?)\)/)?.[1];
 
-    if (!fontLoaded) {
-      return null; 
+    if (!fontUrl) {
+      throw new Error(`Could not extract font URL for ${fontFamily}`);
     }
 
-    return <Text {...props} style={[{ fontFamily }, props.style]} />;
-  };
-
-  return FontComponent;
+    await Font.loadAsync({ [fontFamily]: fontUrl });
+    fontCache[fontFamily] = true;
+  } catch (error) {
+    console.error(`Failed to load font ${fontFamily}:`, error);
+    throw error;
+  }
 };
 
-export default applyGoogleFont; 
+export const useFont = (fontFamily: string): boolean => {
+  const [fontLoaded, setFontLoaded] = useState(false);
+
+  useEffect(() => {
+    if (fontFamily) {
+      loadFont(fontFamily)
+        .then(() => setFontLoaded(true))
+        .catch(() => setFontLoaded(false));
+    }
+  }, [fontFamily]);
+
+  return fontLoaded;
+};
