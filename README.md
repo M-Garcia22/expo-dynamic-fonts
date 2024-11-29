@@ -2,6 +2,8 @@
 
 A powerful Expo package for dynamically loading and using Google Fonts in your Expo application with ease.
 
+![Expo Dynamic Fonts Demo](dynamic-fonts.gif)
+
 ## Table of Contents
 
 - [Installation](#installation)
