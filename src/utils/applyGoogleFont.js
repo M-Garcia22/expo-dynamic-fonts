@@ -31,24 +31,53 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.useFont = void 0;
 const react_1 = require("react");
 const Font = __importStar(require("expo-font"));
-const GOOGLE_FONTS_API = 'https://fonts.googleapis.com/css2?family=';
+const async_storage_1 = __importDefault(require("@react-native-async-storage/async-storage"));
+const GOOGLE_FONTS_API = "https://fonts.googleapis.com/css2?family=";
 const fontCache = {};
+const getCachedFont = (fontFamily) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const cachedFont = yield async_storage_1.default.getItem(`@font_${fontFamily}`);
+        return cachedFont;
+    }
+    catch (error) {
+        console.error("Error retrieving cached font:", error);
+        return null;
+    }
+});
+const setCachedFont = (fontFamily, fontData) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield async_storage_1.default.setItem(`@font_${fontFamily}`, fontData);
+    }
+    catch (error) {
+        console.error("Error caching font:", error);
+    }
+});
 const loadFont = (fontFamily) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     if (fontCache[fontFamily]) {
         return;
     }
     try {
+        const cachedFont = yield getCachedFont(fontFamily);
+        if (cachedFont) {
+            yield Font.loadAsync({ [fontFamily]: cachedFont });
+            fontCache[fontFamily] = true;
+            return;
+        }
         const response = yield fetch(`${GOOGLE_FONTS_API}${fontFamily}`);
         const css = yield response.text();
         const fontUrl = (_a = css.match(/url\((.*?)\)/)) === null || _a === void 0 ? void 0 : _a[1];
         if (!fontUrl) {
             throw new Error(`Could not extract font URL for ${fontFamily}`);
         }
+        yield setCachedFont(fontFamily, fontUrl);
         yield Font.loadAsync({ [fontFamily]: fontUrl });
         fontCache[fontFamily] = true;
     }
@@ -64,7 +93,10 @@ const useFont = (fontFamily) => {
             setFontLoaded(false);
             loadFont(fontFamily)
                 .then(() => setFontLoaded(true))
-                .catch(() => setFontLoaded(false));
+                .catch((error) => {
+                console.error(`Error loading font ${fontFamily}:`, error);
+                setFontLoaded(false);
+            });
         }
     }, [fontFamily]);
     return fontLoaded;
