@@ -1,6 +1,6 @@
 {
   "name": "expo-dynamic-fonts",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "description": "A powerful and flexible React Native package for dynamically loading and using Google Fonts in Expo applications, with built-in caching and TypeScript support",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -34,7 +34,7 @@
     "caching"
   ],
   "author": "Mauro Garcia",
-  "license": "AGPL-3.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Valentine8342/expo-dynamic-fonts/issues"
   },

@@ -231,19 +231,17 @@ Please ensure your code adheres to the existing style and includes appropriate t
 
 Before starting work on a significant change, please open an issue to discuss your proposed modifications. This helps ensure your time is well spent and that your contribution aligns with the project's goals.
 
-By contributing to this project, you agree that your contributions will be licensed under the same AGPL-3.0 license that covers the project.
+By contributing to this project, you agree that your contributions will be licensed under the same MIT License that covers the project.
 
 For any questions about contributing, please open an issue in the project repository.
 
 ## License
 
-This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). This means:
+This project is licensed under the MIT License. This means:
 
 1. You can use this package in your projects, including commercial ones.
-2. If you modify this package, you must distribute your modifications under the same AGPL-3.0 license.
-3. You cannot create and distribute closed-source versions of this package.
-
-We encourage contributions to the main repository rather than creating separate forks. 
+2. You can modify, distribute, and sublicense the code.
+3. You must include the original copyright notice and the MIT License text in any substantial portion of the software.
 
 For any questions about licensing or usage, please open an issue in the project repository.
 
