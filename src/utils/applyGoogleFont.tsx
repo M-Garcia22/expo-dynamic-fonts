@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import * as Font from "expo-font";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from "expo-file-system";
+import { downloadFont } from './downloadFont';
 
 const GOOGLE_FONTS_API = "https://fonts.googleapis.com/css2?family=";
 
@@ -33,29 +35,29 @@ const loadFont = async (fontFamily: string): Promise<void> => {
   }
 
   try {
-    const cachedFont = await getCachedFont(fontFamily);
+    const fontFileName = `${fontFamily.replace(/\s+/g, '_')}.ttf`;
+    const fontPath = `${FileSystem.documentDirectory}fonts/${fontFileName}`;
+    const assetsFontPath = `${FileSystem.documentDirectory}assets/fonts/${fontFileName}`;
 
-    if (cachedFont) {
-      await Font.loadAsync({ [fontFamily]: cachedFont });
+    const fontInfo = await FileSystem.getInfoAsync(fontPath);
+    const assetsFontInfo = await FileSystem.getInfoAsync(assetsFontPath);
+
+    if (fontInfo.exists || assetsFontInfo.exists) {
+      const existingFontPath = fontInfo.exists ? fontPath : assetsFontPath;
+      await Font.loadAsync({ [fontFamily]: { uri: existingFontPath } });
       fontCache[fontFamily] = true;
-      return;
+      console.log(`Successfully loaded font ${fontFamily} from ${existingFontPath}`);
+    } else if (__DEV__) {
+      const { fontPath: downloadedFontPath } = await downloadFont(fontFamily);
+      await Font.loadAsync({ [fontFamily]: { uri: downloadedFontPath } });
+      fontCache[fontFamily] = true;
+      console.log(`Successfully loaded font ${fontFamily} from ${downloadedFontPath}`);
+    } else {
+      throw new Error(`Font file not found: ${fontPath}`);
     }
-
-    const response = await fetch(`${GOOGLE_FONTS_API}${fontFamily}`);
-    const css = await response.text();
-    const fontUrl = css.match(/url\((.*?)\)/)?.[1];
-
-    if (!fontUrl) {
-      throw new Error(`Could not extract font URL for ${fontFamily}`);
-    }
-
-    await setCachedFont(fontFamily, fontUrl);
-
-    await Font.loadAsync({ [fontFamily]: fontUrl });
-    fontCache[fontFamily] = true;
   } catch (error) {
     console.error(`Failed to load font ${fontFamily}:`, error);
-    throw error;
+    // Don't throw the error, just log it and continue
   }
 };
 

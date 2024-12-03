@@ -1,26 +1,11 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
@@ -33,40 +18,68 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createFontComponent = exports.Text = void 0;
-const react_1 = __importStar(require("react"));
-const react_native_1 = require("react-native");
-const applyGoogleFont_1 = require("../utils/applyGoogleFont");
-const Text = (_a) => {
+import React, { useState, useEffect, useRef } from 'react';
+import { Text as RNText, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFont } from '../utils/applyGoogleFont';
+import { downloadFont } from '../utils/downloadFont';
+import * as FileSystem from 'expo-file-system';
+export const Text = (_a) => {
     var { font, style, children } = _a, props = __rest(_a, ["font", "style", "children"]);
-    const [key, setKey] = (0, react_1.useState)(`text-${font}-${Date.now()}`);
-    const [forceUpdate, setForceUpdate] = (0, react_1.useState)(0);
-    const fontLoaded = (0, applyGoogleFont_1.useFont)(font || '');
-    const prevFontRef = (0, react_1.useRef)(font);
-    (0, react_1.useEffect)(() => {
-        if (prevFontRef.current !== font) {
+    const [key, setKey] = useState(`text-${font}-${Date.now()}`);
+    const [forceUpdate, setForceUpdate] = useState(0);
+    const fontLoaded = useFont(font || '');
+    const prevFontRef = useRef(font);
+    useEffect(() => {
+        if (prevFontRef.current !== font && font) {
             const newKey = `text-${font}-${Date.now()}`;
             setKey(newKey);
             prevFontRef.current = font;
             setForceUpdate(prev => prev + 1);
+            // Check if font is already downloaded
+            AsyncStorage.getItem(`@font_${font}`).then((storedFont) => __awaiter(void 0, void 0, void 0, function* () {
+                if (!storedFont) {
+                    // Trigger font download only in development and on simulator/emulator
+                    if (__DEV__ && (Platform.OS === 'ios' || Platform.OS === 'android')) {
+                        try {
+                            const { fontPath, fontFileName } = yield downloadFont(font);
+                            yield AsyncStorage.setItem(`@font_${font}`, fontPath);
+                            // Move font to assets directory
+                            const assetsDir = `${FileSystem.documentDirectory}assets/fonts/`;
+                            const assetsFontPath = `${assetsDir}${fontFileName}`;
+                            yield FileSystem.makeDirectoryAsync(assetsDir, { intermediates: true });
+                            yield FileSystem.moveAsync({
+                                from: fontPath,
+                                to: assetsFontPath
+                            });
+                            console.log(`Moved ${fontFileName} to ${assetsFontPath}`);
+                            console.log('Font is now available in your assets directory.');
+                            // Trigger the move-fonts script
+                            if (Platform.OS === 'ios') {
+                                console.log('Please run "npm run move-fonts" to copy the font to your source code.');
+                            }
+                        }
+                        catch (error) {
+                            console.error('Error downloading or moving font:', error);
+                        }
+                    }
+                }
+            }));
             setTimeout(() => {
                 setForceUpdate(prev => prev + 1);
             }, 100);
         }
     }, [font]);
-    (0, react_1.useEffect)(() => {
+    useEffect(() => {
         if (fontLoaded) {
             setForceUpdate(prev => prev + 1);
         }
     }, [fontLoaded, font]);
     const fontStyle = font ? { fontFamily: font } : {};
-    return (<react_native_1.Text key={`${key}-${forceUpdate}`} style={[style, fontStyle]} {...props}>
+    return (<RNText key={`${key}-${forceUpdate}`} style={[style, fontStyle]} {...props}>
       {children}
-    </react_native_1.Text>);
+    </RNText>);
 };
-exports.Text = Text;
-const createFontComponent = (fontFamily) => {
-    return (props) => (<exports.Text font={fontFamily} {...props}/>);
+export const createFontComponent = (fontFamily) => {
+    return (props) => (<Text font={fontFamily} {...props}/>);
 };
-exports.createFontComponent = createFontComponent;
