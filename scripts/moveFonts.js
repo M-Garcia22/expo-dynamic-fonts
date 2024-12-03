@@ -58,66 +58,52 @@ function updateAppTsx(fontFiles) {
   let appTsxContent = fs.readFileSync(appTsxPath, 'utf8');
 
   const loadFontsRegex = /const loadFonts = async \(\) => \{[\s\S]*?\};/;
-  const existingLoadFonts = appTsxContent.match(loadFontsRegex);
+  const loadFontsMatch = appTsxContent.match(loadFontsRegex);
 
-  if (fontFiles.length === 0 && !existingLoadFonts) {
-    console.log('[DEBUG] No fonts to add and no existing loadFonts function. Skipping update.');
+  if (!loadFontsMatch) {
+    console.error('[DEBUG] Could not find loadFonts function');
     return;
   }
 
-  if (existingLoadFonts) {
-    console.log('[DEBUG] Found existing loadFonts function');
-    const existingFontsRegex = /'([^']+)':\s*require\([^)]+\)/g;
-    const existingFonts = [...existingLoadFonts[0].matchAll(existingFontsRegex)].map(match => match[1]);
-    console.log(`[DEBUG] Existing fonts: ${existingFonts.join(', ')}`);
+  let loadFontsContent = loadFontsMatch[0];
+  console.log('[DEBUG] Found loadFonts function content:', loadFontsContent);
 
-    const newFontEntries = fontFiles.map(file => {
-      const fontName = path.basename(file, path.extname(file));
-      return `'${fontName}': require('./src/assets/fonts/${file}')`;
-    });
-    console.log(`[DEBUG] New font entries: ${newFontEntries.join(', ')}`);
+  const lastTtfIndex = loadFontsContent.lastIndexOf('.ttf');
 
-    const combinedFonts = [...new Set([...existingFonts, ...newFontEntries.map(entry => entry.split(':')[0].replace(/'/g, ''))])];
-    console.log(`[DEBUG] Combined fonts: ${combinedFonts.join(', ')}`);
-
-    const newLoadFonts = `const loadFonts = async () => {
-    await Font.loadAsync({
-${combinedFonts.map(font => {
-        const existingEntry = existingFonts.includes(font) ? 
-          existingLoadFonts[0].match(new RegExp(`'${font}':[^,]+`))[0] :
-          newFontEntries.find(entry => entry.startsWith(`'${font}'`));
-        return `      ${existingEntry || `'${font}': require('./src/assets/fonts/${font}.ttf')`}`;
-      }).join(',\n')}
-    });
-    setFontsLoaded(true);
-  };`;
-
-    appTsxContent = appTsxContent.replace(loadFontsRegex, newLoadFonts);
-  } else {
-    console.log('[DEBUG] No existing loadFonts function found, creating new one');
-    const newLoadFonts = `const loadFonts = async () => {
-    await Font.loadAsync({
-${fontFiles.map(file => {
-        const fontName = path.basename(file, path.extname(file));
-        return `      '${fontName}': require('./src/assets/fonts/${file}')`;
-      }).join(',\n')}
-    });
-    setFontsLoaded(true);
-  };`;
-
-    // Find a suitable place to insert the new loadFonts function
-    const insertPosition = appTsxContent.indexOf('function App()');
-    if (insertPosition !== -1) {
-      appTsxContent = appTsxContent.slice(0, insertPosition) + newLoadFonts + '\n\n' + appTsxContent.slice(insertPosition);
-    } else {
-      console.error('[DEBUG] Could not find a suitable place to insert loadFonts function');
-      return;
-    }
+  if (lastTtfIndex === -1) {
+    console.error('[DEBUG] Could not find any .ttf entries in loadFonts function');
+    return;
   }
+
+  console.log(`[DEBUG] Last .ttf index: ${lastTtfIndex}`);
+
+  const insertPosition = loadFontsContent.indexOf('\n', lastTtfIndex);
+  
+  if (insertPosition === -1) {
+    console.error('[DEBUG] Could not find appropriate position to insert new fonts');
+    return;
+  }
+
+  console.log(`[DEBUG] Insert position: ${insertPosition}`);
+
+  const newFontEntries = fontFiles.map(file => {
+    const fontName = path.basename(file, path.extname(file));
+    return `      '${fontName}': require('./src/assets/fonts/${file}'),`;
+  }).join('\n');
+
+  console.log('[DEBUG] New font entries:', newFontEntries);
+
+  loadFontsContent = loadFontsContent.slice(0, insertPosition) + 
+                     '\n' + newFontEntries +
+                     loadFontsContent.slice(insertPosition);
+
+  console.log('[DEBUG] Updated loadFonts content:', loadFontsContent);
+
+  appTsxContent = appTsxContent.replace(loadFontsRegex, loadFontsContent);
 
   console.log('[DEBUG] Writing updated App.tsx content');
   fs.writeFileSync(appTsxPath, appTsxContent);
-  console.log('[DEBUG] Updated App.tsx with new font assets while preserving existing fonts');
+  console.log('[DEBUG] Updated App.tsx with new font assets');
 }
 
 function updateAppJson() {
@@ -228,4 +214,74 @@ function copyFonts() {
   }
 }
 
-copyFonts();
+function clearCachedFonts() {
+  console.log('[DEBUG] Starting clearCachedFonts');
+  const fontsPath = findExpoFontsDirectory();
+  const projectFontsPath = path.join(projectRoot, 'src', 'assets', 'fonts');
+
+  if (!fontsPath) {
+    console.error('[DEBUG] Could not find Expo fonts directory. No cached fonts to clear.');
+    return;
+  }
+
+  try {
+    const cachedFontFiles = fs.readdirSync(fontsPath);
+    console.log(`[DEBUG] Found ${cachedFontFiles.length} cached font files to remove`);
+
+    cachedFontFiles.forEach((file) => {
+      const cachedFilePath = path.join(fontsPath, file);
+      const projectFilePath = path.join(projectFontsPath, file);
+
+      // Remove from cache
+      fs.unlinkSync(cachedFilePath);
+      console.log(`[DEBUG] Removed cached font file: ${cachedFilePath}`);
+
+      // Remove from project assets if it exists
+      if (fs.existsSync(projectFilePath)) {
+        fs.unlinkSync(projectFilePath);
+        console.log(`[DEBUG] Removed project font file: ${projectFilePath}`);
+      }
+    });
+
+    console.log('[DEBUG] Successfully cleared all cached fonts');
+  } catch (error) {
+    console.error('[DEBUG] Error clearing cached fonts:', error);
+  }
+
+  // Update App.tsx to remove only the cached fonts
+  const appTsxPath = path.join(projectRoot, 'App.tsx');
+  try {
+    let appTsxContent = fs.readFileSync(appTsxPath, 'utf8');
+    const loadFontsRegex = /const loadFonts = async \(\) => \{[\s\S]*?\};/;
+    const existingLoadFonts = appTsxContent.match(loadFontsRegex);
+
+    if (existingLoadFonts) {
+      const updatedLoadFonts = existingLoadFonts[0].split('\n').filter(line => {
+        const fontName = line.match(/'([^']+)':/);
+        return fontName && !cachedFontFiles.includes(`${fontName[1]}.ttf`);
+      }).join('\n');
+
+      if (updatedLoadFonts.includes('await Font.loadAsync({')) {
+        appTsxContent = appTsxContent.replace(loadFontsRegex, updatedLoadFonts);
+      } else {
+        // If all fonts were removed, remove the entire loadFonts function
+        appTsxContent = appTsxContent.replace(loadFontsRegex, '');
+      }
+
+      fs.writeFileSync(appTsxPath, appTsxContent);
+      console.log('[DEBUG] Successfully updated App.tsx to remove cached fonts');
+    }
+  } catch (error) {
+    console.error('[DEBUG] Error updating App.tsx:', error);
+  }
+
+  console.log('[DEBUG] Finished clearing cached fonts and updating App.tsx');
+}
+
+const args = process.argv.slice(2);
+
+if (args.includes('--clear-cache')) {
+  clearCachedFonts();
+} else {
+  copyFonts();
+}
