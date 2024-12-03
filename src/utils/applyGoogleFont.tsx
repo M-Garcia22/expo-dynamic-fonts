@@ -4,6 +4,34 @@ import * as FileSystem from 'expo-file-system';
 
 const fontCache: { [key: string]: boolean } = {};
 
+async function saveFontFile(fontFamily: string, fontFileUrl: string): Promise<void> {
+  console.log(`[DEBUG] Starting saveFontFile for ${fontFamily}`);
+  const fontFileName = `${fontFamily}.ttf`;
+  const fontDir = `${FileSystem.documentDirectory}.expo-dynamic-fonts/`;
+  const fontPath = `${fontDir}${fontFileName}`;
+
+  console.log(`[DEBUG] Font directory: ${fontDir}`);
+  console.log(`[DEBUG] Font path: ${fontPath}`);
+
+  try {
+    await FileSystem.makeDirectoryAsync(fontDir, { intermediates: true });
+    console.log(`[DEBUG] Created font directory: ${fontDir}`);
+  } catch (error) {
+    console.error(`[DEBUG] Error creating font directory: ${error}`);
+  }
+
+  try {
+    const { uri } = await FileSystem.downloadAsync(fontFileUrl, fontPath);
+    console.log(`[DEBUG] Font file downloaded and saved to: ${uri}`);
+  } catch (error) {
+    console.error(`[DEBUG] Error downloading font file: ${error}`);
+  }
+
+  // Verify file exists after download
+  const fileInfo = await FileSystem.getInfoAsync(fontPath);
+  console.log(`[DEBUG] Font file info after download:`, fileInfo);
+}
+
 async function loadFont(fontFamily: string): Promise<void> {
   console.log(`[DEBUG] Starting to load font: ${fontFamily}`);
   if (fontCache[fontFamily]) {
@@ -40,6 +68,8 @@ async function loadFont(fontFamily: string): Promise<void> {
         throw new Error('Could not extract font file URL from CSS');
       }
       console.log(`[DEBUG] Extracted font file URL: ${fontFileUrl}`);
+
+      await saveFontFile(fontFamily, fontFileUrl);
 
       console.log(`[DEBUG] Attempting to load font with expo-font`);
       await Font.loadAsync({

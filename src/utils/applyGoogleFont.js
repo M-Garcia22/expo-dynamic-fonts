@@ -11,6 +11,33 @@ import { useState, useEffect } from 'react';
 import * as Font from 'expo-font';
 import * as FileSystem from 'expo-file-system';
 const fontCache = {};
+function saveFontFile(fontFamily, fontFileUrl) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log(`[DEBUG] Starting saveFontFile for ${fontFamily}`);
+        const fontFileName = `${fontFamily}.ttf`;
+        const fontDir = `${FileSystem.documentDirectory}.expo-dynamic-fonts/`;
+        const fontPath = `${fontDir}${fontFileName}`;
+        console.log(`[DEBUG] Font directory: ${fontDir}`);
+        console.log(`[DEBUG] Font path: ${fontPath}`);
+        try {
+            yield FileSystem.makeDirectoryAsync(fontDir, { intermediates: true });
+            console.log(`[DEBUG] Created font directory: ${fontDir}`);
+        }
+        catch (error) {
+            console.error(`[DEBUG] Error creating font directory: ${error}`);
+        }
+        try {
+            const { uri } = yield FileSystem.downloadAsync(fontFileUrl, fontPath);
+            console.log(`[DEBUG] Font file downloaded and saved to: ${uri}`);
+        }
+        catch (error) {
+            console.error(`[DEBUG] Error downloading font file: ${error}`);
+        }
+        // Verify file exists after download
+        const fileInfo = yield FileSystem.getInfoAsync(fontPath);
+        console.log(`[DEBUG] Font file info after download:`, fileInfo);
+    });
+}
 function loadFont(fontFamily) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -46,6 +73,7 @@ function loadFont(fontFamily) {
                     throw new Error('Could not extract font file URL from CSS');
                 }
                 console.log(`[DEBUG] Extracted font file URL: ${fontFileUrl}`);
+                yield saveFontFile(fontFamily, fontFileUrl);
                 console.log(`[DEBUG] Attempting to load font with expo-font`);
                 yield Font.loadAsync({
                     [fontFamily]: { uri: fontFileUrl },
