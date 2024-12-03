@@ -1,80 +1,88 @@
-import { useState, useEffect } from "react";
-import * as Font from "expo-font";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as FileSystem from "expo-file-system";
-import { downloadFont } from './downloadFont';
-
-const GOOGLE_FONTS_API = "https://fonts.googleapis.com/css2?family=";
+import { useState, useEffect } from 'react';
+import * as Font from 'expo-font';
+import * as FileSystem from 'expo-file-system';
 
 const fontCache: { [key: string]: boolean } = {};
 
-const getCachedFont = async (fontFamily: string): Promise<string | null> => {
-  try {
-    const cachedFont = await AsyncStorage.getItem(`@font_${fontFamily}`);
-    return cachedFont;
-  } catch (error) {
-    console.error("Error retrieving cached font:", error);
-    return null;
-  }
-};
-
-const setCachedFont = async (
-  fontFamily: string,
-  fontData: string
-): Promise<void> => {
-  try {
-    await AsyncStorage.setItem(`@font_${fontFamily}`, fontData);
-  } catch (error) {
-    console.error("Error caching font:", error);
-  }
-};
-
-const loadFont = async (fontFamily: string): Promise<void> => {
+async function loadFont(fontFamily: string): Promise<void> {
+  console.log(`[DEBUG] Starting to load font: ${fontFamily}`);
   if (fontCache[fontFamily]) {
+    console.log(`[DEBUG] Font ${fontFamily} already cached, returning early`);
     return;
   }
 
   try {
-    const fontFileName = `${fontFamily.replace(/\s+/g, '_')}.ttf`;
-    const fontPath = `${FileSystem.documentDirectory}fonts/${fontFileName}`;
-    const assetsFontPath = `${FileSystem.documentDirectory}assets/fonts/${fontFileName}`;
+    console.log(`[DEBUG] Checking if font exists locally in src/assets/fonts`);
+    const localFontPath = `${FileSystem.documentDirectory}../src/assets/fonts/${fontFamily}.ttf`;
+    const localFontInfo = await FileSystem.getInfoAsync(localFontPath);
+    console.log(`[DEBUG] Local font info:`, localFontInfo);
 
-    const fontInfo = await FileSystem.getInfoAsync(fontPath);
-    const assetsFontInfo = await FileSystem.getInfoAsync(assetsFontPath);
-
-    if (fontInfo.exists || assetsFontInfo.exists) {
-      const existingFontPath = fontInfo.exists ? fontPath : assetsFontPath;
-      await Font.loadAsync({ [fontFamily]: { uri: existingFontPath } });
-      fontCache[fontFamily] = true;
-      console.log(`Successfully loaded font ${fontFamily} from ${existingFontPath}`);
-    } else if (__DEV__) {
-      const { fontPath: downloadedFontPath } = await downloadFont(fontFamily);
-      await Font.loadAsync({ [fontFamily]: { uri: downloadedFontPath } });
-      fontCache[fontFamily] = true;
-      console.log(`Successfully loaded font ${fontFamily} from ${downloadedFontPath}`);
+    if (localFontInfo.exists) {
+      console.log(`[DEBUG] Found local font file: ${localFontPath}`);
+      await Font.loadAsync({
+        [fontFamily]: localFontPath,
+      });
+      console.log(`[DEBUG] Successfully loaded local font: ${fontFamily}`);
     } else {
-      throw new Error(`Font file not found: ${fontPath}`);
-    }
-  } catch (error) {
-    console.error(`Failed to load font ${fontFamily}:`, error);
-    // Don't throw the error, just log it and continue
-  }
-};
+      console.log(`[DEBUG] Local font not found, fetching from Google Fonts`);
+      const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}`;
+      console.log(`[DEBUG] Font URL: ${fontUrl}`);
 
-export const useFont = (fontFamily: string): boolean => {
-  const [fontLoaded, setFontLoaded] = useState(false);
+      console.log(`[DEBUG] Attempting to fetch font CSS`);
+      const response = await fetch(fontUrl);
+      console.log(`[DEBUG] Font CSS fetch response status: ${response.status}`);
+      const css = await response.text();
+      console.log(`[DEBUG] Font CSS content: ${css.substring(0, 100)}...`);
+
+      console.log(`[DEBUG] Parsing font URL from CSS`);
+      const fontFileUrl = css.match(/url\((.*?)\)/)?.[1];
+      if (!fontFileUrl) {
+        throw new Error('Could not extract font file URL from CSS');
+      }
+      console.log(`[DEBUG] Extracted font file URL: ${fontFileUrl}`);
+
+      console.log(`[DEBUG] Attempting to load font with expo-font`);
+      await Font.loadAsync({
+        [fontFamily]: { uri: fontFileUrl },
+      });
+    }
+
+    fontCache[fontFamily] = true;
+    console.log(`[DEBUG] Font ${fontFamily} loaded successfully`);
+  } catch (error) {
+    console.error(`[DEBUG] Error loading font ${fontFamily}:`, error);
+    console.error(`[DEBUG] Error stack:`, (error as Error).stack);
+    if (typeof error === 'object' && error !== null && 'response' in error) {
+      const errorWithResponse = error as { response: { text: () => Promise<string> } };
+      console.error(`[DEBUG] Error response:`, await errorWithResponse.response.text());
+    }
+    throw error;
+  }
+}
+
+function useFont(fontFamily: string): boolean {
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (fontFamily) {
-      setFontLoaded(false);
-      loadFont(fontFamily)
-        .then(() => setFontLoaded(true))
-        .catch((error) => {
-          console.error(`Error loading font ${fontFamily}:`, error);
-          setFontLoaded(false);
-        });
-    }
+    console.log(`[DEBUG] useFont hook effect triggered for ${fontFamily}`);
+    let isMounted = true;
+    loadFont(fontFamily)
+      .then(() => {
+        console.log(`[DEBUG] Font ${fontFamily} loaded successfully in useFont hook`);
+        if (isMounted) setIsLoaded(true);
+      })
+      .catch((error) => {
+        console.error(`[DEBUG] Failed to load font ${fontFamily} in useFont hook:`, error);
+        if (isMounted) setIsLoaded(false);
+      });
+    return () => {
+      console.log(`[DEBUG] Cleanup function called for ${fontFamily}`);
+      isMounted = false;
+    };
   }, [fontFamily]);
 
-  return fontLoaded;
-};
+  console.log(`[DEBUG] useFont hook returning isLoaded: ${isLoaded} for ${fontFamily}`);
+  return isLoaded;
+}
+
+export default useFont;

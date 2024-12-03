@@ -2,14 +2,15 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { Text, createFontComponent } from '../../components/Text';
 import * as Font from 'expo-font';
-import { useFont } from '../applyGoogleFont';
+import useFont from '../applyGoogleFont';
 
 jest.mock('expo-font', () => ({
   loadAsync: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('../applyGoogleFont', () => ({
-  useFont: jest.fn(),
+  __esModule: true,
+  default: jest.fn(),
 }));
 
 describe('Google Font Loading', () => {

@@ -1,66 +1,83 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const glob = require('glob');
 
-// Get the project root directory
 const projectRoot = process.cwd();
 const FONTS_DIR = path.join(projectRoot, 'src', 'assets', 'fonts');
 
-// Function to copy files from the simulator/emulator to the project directory
-function copyFonts() {
+function findExpoFontsDirectory() {
   const isMac = os.platform() === 'darwin';
   const isWindows = os.platform() === 'win32';
+  let fontsPath = null;
 
+  if (isMac) {
+    const simulatorPath = path.join(os.homedir(), 'Library/Developer/CoreSimulator/Devices');
+    const pattern = `${simulatorPath}/**/Documents/ExponentExperienceData/**/fonts`;
+    const paths = glob.sync(pattern);
+    fontsPath = paths[0];
+  } else if (isWindows) {
+    // Android emulator path on Windows
+    const androidPath = path.join(os.homedir(), 'AppData/Local/Android/Sdk');
+    const pattern = `${androidPath}/**/data/data/**/files/fonts`;
+    const paths = glob.sync(pattern);
+    fontsPath = paths[0];
+  } else {
+    // Linux Android emulator path
+    const androidPath = path.join(os.homedir(), 'Android/Sdk');
+    const pattern = `${androidPath}/**/data/data/**/files/fonts`;
+    const paths = glob.sync(pattern);
+    fontsPath = paths[0];
+  }
+
+  return fontsPath;
+}
+
+function copyFonts() {
+  // Create fonts directory if it doesn't exist
   if (!fs.existsSync(FONTS_DIR)) {
     fs.mkdirSync(FONTS_DIR, { recursive: true });
   }
 
-  if (isMac) {
-    // For iOS simulator on macOS
-    const simulatorFontsPath = path.join(
-      os.homedir(),
-      'Library/Developer/CoreSimulator/Devices'
-    );
+  const fontsPath = findExpoFontsDirectory();
 
-    try {
-      const deviceDirs = fs.readdirSync(simulatorFontsPath);
-      deviceDirs.forEach((deviceDir) => {
-        const appPath = path.join(
-          simulatorFontsPath,
-          deviceDir,
-          'data/Containers/Data/Application'
-        );
+  if (!fontsPath) {
+    console.error('Could not find Expo fonts directory. Make sure your app has been run at least once.');
+    return;
+  }
 
-        if (fs.existsSync(appPath)) {
-          const appDirs = fs.readdirSync(appPath);
-          appDirs.forEach((appDir) => {
-            const fontsPath = path.join(
-              appPath,
-              appDir,
-              'Documents/ExponentExperienceData/@anonymous/metals-depot-5d89fae5-d705-441c-84e3-a9920d12416f/fonts'
-            );
+  try {
+    const fontFiles = fs.readdirSync(fontsPath);
+    let copiedCount = 0;
 
-            if (fs.existsSync(fontsPath)) {
-              const fontFiles = fs.readdirSync(fontsPath);
-              fontFiles.forEach((fontFile) => {
-                const src = path.join(fontsPath, fontFile);
-                const dest = path.join(FONTS_DIR, fontFile);
-                fs.copyFileSync(src, dest);
-                console.log(`Copied ${fontFile} to ${dest}`);
-              });
-            }
-          });
-        }
-      });
-    } catch (error) {
-      console.error('Error copying fonts:', error);
+    fontFiles.forEach((fontFile) => {
+      if (fontFile.endsWith('.ttf') || fontFile.endsWith('.woff2') || fontFile.endsWith('.woff')) {
+        const src = path.join(fontsPath, fontFile);
+        const dest = path.join(FONTS_DIR, fontFile.replace(/\.(woff2|woff)$/, '.ttf'));
+        
+        fs.copyFileSync(src, dest);
+        copiedCount++;
+        console.log(`Copied ${fontFile} to ${dest}`);
+      }
+    });
+
+    if (copiedCount === 0) {
+      console.log('No font files found to copy.');
+    } else {
+      console.log(`\nSuccessfully copied ${copiedCount} font files to ${FONTS_DIR}`);
+      console.log('\nMake sure to add the following to your app.json:');
+      console.log(`
+{
+  "expo": {
+    "assetBundlePatterns": [
+      "**/*",
+      "src/assets/fonts/*"
+    ]
+  }
+}`);
     }
-  } else if (isWindows) {
-    // For Android emulator on Windows
-    console.log('Please manually copy the font files from your Android emulator.');
-  } else {
-    // For Android emulator on Linux
-    console.log('Please manually copy the font files from your Android emulator.');
+  } catch (error) {
+    console.error('Error copying fonts:', error);
   }
 }
 

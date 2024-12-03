@@ -1,1 +1,2 @@
-export declare const useFont: (fontFamily: string) => boolean;
+declare function useFont(fontFamily: string): boolean;
+export default useFont;
