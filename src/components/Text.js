@@ -9,14 +9,33 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Text as RNText } from 'react-native';
-import useFont from '../utils/applyGoogleFont';
+import { useFont } from '../utils/applyGoogleFont';
 export const Text = (_a) => {
     var { font, style, children } = _a, props = __rest(_a, ["font", "style", "children"]);
-    const isFontLoaded = font ? useFont(font) : true;
-    const fontStyle = font && isFontLoaded ? { fontFamily: font } : {};
-    return (<RNText style={[style, fontStyle]} {...props}>
+    const [key, setKey] = useState(`text-${font}-${Date.now()}`);
+    const [forceUpdate, setForceUpdate] = useState(0);
+    const fontLoaded = useFont(font || '');
+    const prevFontRef = useRef(font);
+    useEffect(() => {
+        if (prevFontRef.current !== font) {
+            const newKey = `text-${font}-${Date.now()}`;
+            setKey(newKey);
+            prevFontRef.current = font;
+            setForceUpdate(prev => prev + 1);
+            setTimeout(() => {
+                setForceUpdate(prev => prev + 1);
+            }, 100);
+        }
+    }, [font]);
+    useEffect(() => {
+        if (fontLoaded) {
+            setForceUpdate(prev => prev + 1);
+        }
+    }, [fontLoaded, font]);
+    const fontStyle = font ? { fontFamily: font } : {};
+    return (<RNText key={`${key}-${forceUpdate}`} style={[style, fontStyle]} {...props}>
       {children}
     </RNText>);
 };
