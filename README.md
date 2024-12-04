@@ -13,6 +13,7 @@ A powerful Expo package for dynamically loading and using Google Fonts in your E
   - [Using the useFont hook](#using-the-usefont-hook)
 - [API Reference](#api-reference)
 - [How it works](#how-it-works)
+- [GDPR Compliance and Font Bundling](#gdpr-compliance-and-font-bundling)
 - [Advanced Usage](#advanced-usage)
 - [TypeScript Support](#typescript-support)
 - [Performance Considerations](#performance-considerations)
@@ -161,6 +162,89 @@ The `expo-dynamic-fonts` package simplifies the process of using Google Fonts in
 4. It then loads the font using `expo-font`'s `loadAsync` method.
 5. Once loaded, the font is applied to the text.
 6. Loaded fonts are cached to prevent unnecessary reloading and improve performance.
+
+## GDPR Compliance and Font Bundling
+
+To ensure GDPR compliance and improve performance, `expo-dynamic-fonts` provides a way to bundle fonts with your application instead of fetching them from the Google Fonts API at runtime.
+
+### Automatic Font Bundling
+
+You can use the `moveFonts` script to automatically download and bundle the fonts used in your application. This script will:
+
+1. Detect the fonts used in your app
+2. Download the font files
+3. Move them to the correct location in your project
+4. Update your `app.json` and `App.tsx` files to use the bundled fonts
+
+To use this feature:
+
+1. Add the following script to your `package.json`:
+
+```json
+"scripts": {
+  "move-fonts": "node node_modules/expo-dynamic-fonts/scripts/moveFonts.js"
+}
+```
+
+2. Run the script after you've used the fonts in your app:
+
+```sh
+npm run move-fonts
+# or
+yarn move-fonts
+```
+
+3. Rebuild your app to include the bundled fonts.
+
+### Example Usage
+
+Here's an example of how to use `expo-dynamic-fonts` with bundled fonts:
+
+```jsx
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, View } from 'react-native';
+import { Text } from 'expo-dynamic-fonts';
+
+export default function App() {
+  return (
+    <View style={styles.container}>
+      <Text font="Ribeye" style={{ fontSize: 30 }}>DYNAMIC FONT LOADER</Text>
+      <Text style={styles.text}>GDPR COMPLIANT FONT LOADER</Text>
+      <StatusBar style="auto" />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    fontFamily: 'Ribeye',
+    fontSize: 30,
+    textAlign: 'center',
+  },
+});
+```
+
+After using the fonts in your app, run the `move-fonts` script to bundle them with your application. This ensures that your app is GDPR compliant and performs better by not relying on external font loading at runtime.
+
+### Clearing Cached Fonts
+
+If you need to clear the cached fonts and remove them from your project, you can use the `--clear-cache` flag:
+
+```sh
+npm run move-fonts -- --clear-cache
+# or
+yarn move-fonts --clear-cache
+```
+
+This will remove the cached font files and update your `App.tsx` accordingly.
+
+By using this bundling approach, you can ensure that your app is GDPR compliant while still enjoying the benefits of using custom fonts in your Expo application.
 
 ## Advanced Usage
 
