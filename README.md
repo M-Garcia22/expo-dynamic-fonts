@@ -1,9 +1,10 @@
+<img src="badge.png" alt="GDPR Compliant Badge" align="left" width="100" style="margin-right: 20px;"/>
+
 # Expo Dynamic Fonts
 
 A powerful and GDPR-compliant Expo package for dynamically loading and using Google Fonts in your Expo application.
 
-| ![GDPR Compliant](https://www.phpkb.com/images/GDPR-compliant-badge.png) | ![Expo Dynamic Fonts Demo](dynamic-fonts.gif) |
-|:------------------------------------------------------------------------:|:---------------------------------------------:|
+![Expo Dynamic Fonts Demo](dynamic-fonts.gif)
 
 ## Table of Contents
 
