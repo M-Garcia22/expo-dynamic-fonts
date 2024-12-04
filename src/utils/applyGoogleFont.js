@@ -92,3 +92,4 @@ export function useFont(fontFamily) {
     return isLoaded;
 }
 export default useFont;
+export { loadFont };

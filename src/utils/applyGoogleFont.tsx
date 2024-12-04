@@ -89,3 +89,4 @@ export function useFont(fontFamily: string): boolean {
 }
 
 export default useFont;
+export { loadFont };

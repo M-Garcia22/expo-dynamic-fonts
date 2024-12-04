@@ -4,12 +4,26 @@ const os = require('os');
 const glob = require('glob');
 
 const projectRoot = process.cwd();
-const FONTS_DIR = path.join(projectRoot, 'src', 'assets', 'fonts');
+const SRC_FONTS_DIR = path.join(projectRoot, 'src', 'assets', 'fonts');
+const TOP_LEVEL_FONTS_DIR = path.join(projectRoot, 'assets', 'fonts');
 const APP_JSON_PATH = path.join(projectRoot, 'app.json');
+const APP_TSX_PATH = path.join(projectRoot, 'App.tsx');
 
 console.log(`[DEBUG] Project root: ${projectRoot}`);
-console.log(`[DEBUG] Fonts directory: ${FONTS_DIR}`);
-console.log(`[DEBUG] app.json path: ${APP_JSON_PATH}`);
+
+function detectProjectStructure() {
+  const hasSrcFonts = fs.existsSync(SRC_FONTS_DIR);
+  const hasTopLevelFonts = fs.existsSync(TOP_LEVEL_FONTS_DIR);
+  const hasAppTsx = fs.existsSync(APP_TSX_PATH);
+
+  if (hasSrcFonts && hasAppTsx) {
+    return 'src';
+  } else if (hasTopLevelFonts) {
+    return 'top-level';
+  } else {
+    return 'unknown';
+  }
+}
 
 function findExpoFontsDirectory() {
   console.log('[DEBUG] Starting findExpoFontsDirectory');
@@ -106,7 +120,7 @@ function updateAppTsx(fontFiles) {
   console.log('[DEBUG] Updated App.tsx with new font assets');
 }
 
-function updateAppJson() {
+function updateAppJson(fontFiles, structure) {
   console.log('[DEBUG] Starting updateAppJson');
   
   if (!fs.existsSync(APP_JSON_PATH)) {
@@ -114,53 +128,72 @@ function updateAppJson() {
     return;
   }
 
-  let appJsonContent;
-  try {
-    appJsonContent = JSON.parse(fs.readFileSync(APP_JSON_PATH, 'utf8'));
-    console.log('[DEBUG] Successfully read app.json');
-  } catch (error) {
-    console.error('[DEBUG] Error reading app.json:', error);
-    return;
-  }
+  let appJsonContent = JSON.parse(fs.readFileSync(APP_JSON_PATH, 'utf8'));
+  console.log('[DEBUG] Successfully read app.json');
 
-  if (!appJsonContent.expo) {
-    appJsonContent.expo = {};
-    console.log('[DEBUG] Added expo object to app.json');
-  }
+  if (!appJsonContent.expo) appJsonContent.expo = {};
 
+  // Update assetBundlePatterns
   if (!appJsonContent.expo.assetBundlePatterns) {
     appJsonContent.expo.assetBundlePatterns = [];
-    console.log('[DEBUG] Added assetBundlePatterns array to app.json');
   }
 
-  const patterns = ["**/*", "src/assets/fonts/*"];
-  let updated = false;
-
+  const patterns = structure === 'src' ? ["**/*", "src/assets/fonts/*"] : ["**/*", "assets/fonts/*"];
   patterns.forEach(pattern => {
     if (!appJsonContent.expo.assetBundlePatterns.includes(pattern)) {
       appJsonContent.expo.assetBundlePatterns.push(pattern);
       console.log(`[DEBUG] Added ${pattern} to assetBundlePatterns`);
-      updated = true;
     }
   });
 
-  if (updated) {
-    try {
-      fs.writeFileSync(APP_JSON_PATH, JSON.stringify(appJsonContent, null, 2));
-      console.log('[DEBUG] Successfully updated app.json');
-    } catch (error) {
-      console.error('[DEBUG] Error writing to app.json:', error);
+  // Update expo-font plugin for top-level structure
+  if (structure === 'top-level') {
+    if (!appJsonContent.expo.plugins) {
+      appJsonContent.expo.plugins = [];
     }
-  } else {
-    console.log('[DEBUG] app.json already contains necessary assetBundlePatterns');
+
+    const expoFontPlugin = appJsonContent.expo.plugins.find(plugin => 
+      Array.isArray(plugin) && plugin[0] === 'expo-font'
+    );
+
+    if (!expoFontPlugin) {
+      appJsonContent.expo.plugins.push(['expo-font', { fonts: [] }]);
+      console.log('[DEBUG] Added expo-font plugin to app.json');
+    }
+
+    const fontPluginIndex = appJsonContent.expo.plugins.findIndex(plugin => 
+      Array.isArray(plugin) && plugin[0] === 'expo-font'
+    );
+
+    fontFiles.forEach(file => {
+      const fontPath = `./assets/fonts/${file}`;
+      if (!appJsonContent.expo.plugins[fontPluginIndex][1].fonts.includes(fontPath)) {
+        appJsonContent.expo.plugins[fontPluginIndex][1].fonts.push(fontPath);
+        console.log(`[DEBUG] Added ${fontPath} to expo-font plugin`);
+      }
+    });
   }
+
+  fs.writeFileSync(APP_JSON_PATH, JSON.stringify(appJsonContent, null, 2));
+  console.log('[DEBUG] Successfully updated app.json');
 }
 
 function copyFonts() {
   console.log('[DEBUG] Starting copyFonts');
-  if (!fs.existsSync(FONTS_DIR)) {
-    console.log(`[DEBUG] Creating fonts directory: ${FONTS_DIR}`);
-    fs.mkdirSync(FONTS_DIR, { recursive: true });
+  
+  const structure = detectProjectStructure();
+  console.log(`[DEBUG] Detected project structure: ${structure}`);
+
+  if (structure === 'unknown') {
+    console.error('[DEBUG] Unknown project structure. Please set up your fonts directory.');
+    return;
+  }
+
+  const targetDir = structure === 'src' ? SRC_FONTS_DIR : TOP_LEVEL_FONTS_DIR;
+
+  if (!fs.existsSync(targetDir)) {
+    console.log(`[DEBUG] Creating fonts directory: ${targetDir}`);
+    fs.mkdirSync(targetDir, { recursive: true });
   }
 
   const fontsPath = findExpoFontsDirectory();
@@ -176,7 +209,7 @@ function copyFonts() {
     console.log(`[DEBUG] Found font files: ${fontFiles.join(', ')}`);
     
     const newFontFiles = fontFiles.filter(file => {
-      const destPath = path.join(FONTS_DIR, file.replace(/\.(woff2|woff)$/, '.ttf'));
+      const destPath = path.join(targetDir, file.replace(/\.(woff2|woff)$/, '.ttf'));
       return !fs.existsSync(destPath);
     });
 
@@ -191,7 +224,7 @@ function copyFonts() {
     newFontFiles.forEach((fontFile) => {
       if (fontFile.endsWith('.ttf') || fontFile.endsWith('.woff2') || fontFile.endsWith('.woff')) {
         const src = path.join(fontsPath, fontFile);
-        const dest = path.join(FONTS_DIR, fontFile.replace(/\.(woff2|woff)$/, '.ttf'));
+        const dest = path.join(targetDir, fontFile.replace(/\.(woff2|woff)$/, '.ttf'));
         
         console.log(`[DEBUG] Copying font file from ${src} to ${dest}`);
         fs.copyFileSync(src, dest);
@@ -204,10 +237,12 @@ function copyFonts() {
     if (copiedCount === 0) {
       console.log('[DEBUG] No font files were copied.');
     } else {
-      console.log(`[DEBUG] Successfully copied ${copiedCount} font files to ${FONTS_DIR}`);
+      console.log(`[DEBUG] Successfully copied ${copiedCount} font files to ${targetDir}`);
       console.log(`[DEBUG] Copied font files: ${copiedFontFiles.join(', ')}`);
-      updateAppTsx(copiedFontFiles);
-      updateAppJson();
+      if (structure === 'src') {
+        updateAppTsx(copiedFontFiles);
+      }
+      updateAppJson(copiedFontFiles, structure);
     }
   } catch (error) {
     console.error('[DEBUG] Error copying fonts:', error);
