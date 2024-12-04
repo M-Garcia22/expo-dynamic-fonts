@@ -1,6 +1,4 @@
-<img src="badge.png" alt="GDPR Compliant Badge" align="left" width="100" style="margin-right: 20px;"/>
-
-# Expo Dynamic Fonts
+# Expo Dynamic Fonts <img src="badge.png" alt="GDPR Compliant Badge" align="right" width="100" style="margin-left: 20px;"/>
 
 A powerful and GDPR-compliant Expo package for dynamically loading and using Google Fonts in your Expo application.
 
