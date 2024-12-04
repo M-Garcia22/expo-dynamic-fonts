@@ -1,4 +1,4 @@
-# Expo Dynamic Fonts
+# Expo Dynamic Fonts ![GDPR Compliant](https://www.phpkb.com/images/GDPR-compliant-badge.png)
 
 A powerful Expo package for dynamically loading and using Google Fonts in your Expo application with ease.
 
