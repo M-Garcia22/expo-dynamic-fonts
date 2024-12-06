@@ -2,6 +2,7 @@
 
 [![npm downloads](https://img.shields.io/npm/dt/expo-dynamic-fonts.svg?label=Total%20Downloads)](https://www.npmjs.com/package/expo-dynamic-fonts)
 [![weekly](https://img.shields.io/npm/dw/expo-dynamic-fonts.svg?label=Weekly&suffix=%20Downloads)](https://www.npmjs.com/package/expo-dynamic-fonts)
+[![daily](https://img.shields.io/npm/dd/expo-dynamic-fonts.svg?label=Daily&suffix=%20Downloads)](https://www.npmjs.com/package/expo-dynamic-fonts)
 
 A powerful and GDPR-compliant Expo package for dynamically loading and using Google Fonts in your Expo application.
 
