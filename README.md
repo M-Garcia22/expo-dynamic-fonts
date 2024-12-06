@@ -1,7 +1,7 @@
 # Expo Dynamic Fonts <img src="badge.png" alt="GDPR Compliant Badge" align="right" width="100" style="margin-left: 20px;"/>
 
 [![npm downloads](https://img.shields.io/npm/dt/expo-dynamic-fonts.svg)](https://www.npmjs.com/package/expo-dynamic-fonts)
-[![weekly downloads](https://img.shields.io/npm/dw/expo-dynamic-fonts.svg)](https://www.npmjs.com/package/expo-dynamic-fonts)
+[![downloads](https://img.shields.io/npm/dw/expo-dynamic-fonts.svg?label=weekly%20downloads)](https://www.npmjs.com/package/expo-dynamic-fonts)
 
 A powerful and GDPR-compliant Expo package for dynamically loading and using Google Fonts in your Expo application.
 
