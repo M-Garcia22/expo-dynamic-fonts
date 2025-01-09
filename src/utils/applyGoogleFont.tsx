@@ -41,13 +41,21 @@ async function loadFont(fontFamily: string): Promise<void> {
         [fontFamily]: localFontPath,
       });
     } else {
-      const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}`;
-      const response = await fetch(fontUrl);
+      const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}&display=swap&text=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?`;
+      const response = await fetch(fontUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36'
+        }
+      });
       const css = await response.text();
 
       const fontFileUrl = css.match(/url\((.*?)\)/)?.[1];
       if (!fontFileUrl) {
         throw new Error('Could not extract font file URL from CSS');
+      }
+
+      if (!fontFileUrl.toLowerCase().includes('.ttf')) {
+        throw new Error('Font format not supported. Only TTF fonts are supported on Android.');
       }
 
       await saveFontFile(fontFamily, fontFileUrl);
