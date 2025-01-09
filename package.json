@@ -1,6 +1,6 @@
 {
   "name": "expo-dynamic-fonts",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "A powerful and flexible React Native package for dynamically loading and using Google Fonts in Expo applications, with built-in caching and TypeScript support",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
