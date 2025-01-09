@@ -35,8 +35,22 @@ export const Text: React.FC<TextProps> = ({ font, style, children, ...props }) =
   );
 };
 
-export const createFontComponent = (fontFamily: string) => {
+export const createFontComponent = (fontFamily: string, variant?: { weight?: number, style?: 'normal' | 'italic' }) => {
+  let fontVariant = '';
+  
+  if (variant?.weight && variant?.style === 'italic') {
+    fontVariant = `ital,wght@1,${variant.weight}`;
+  } else if (variant?.weight) {
+    fontVariant = `wght@${variant.weight}`;
+  } else if (variant?.style === 'italic') {
+    fontVariant = 'ital@1';
+  }
+  
+  const fontName = fontVariant 
+    ? `${fontFamily}:${fontVariant}`
+    : fontFamily;
+
   return (props: Omit<TextProps, 'font'>) => (
-    <Text font={fontFamily} {...props} />
+    <Text font={fontName} {...props} />
   );
 };

@@ -31,6 +31,9 @@ export const Text = (_a) => {
       {children}
     </RNText>);
 };
-export const createFontComponent = (fontFamily) => {
-    return (props) => (<Text font={fontFamily} {...props}/>);
+export const createFontComponent = (fontFamily, variant) => {
+    const fontName = variant
+        ? `${fontFamily}${variant.weight ? `:wght@${variant.weight}` : ''}${variant.style === 'italic' ? ':ital' : ''}`
+        : fontFamily;
+    return (props) => (<Text font={fontName} {...props}/>);
 };

@@ -49,7 +49,12 @@ function loadFont(fontFamily) {
                 });
             }
             else {
-                const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}`;
+                const [baseFontFamily, variantString] = fontFamily.split(':');
+                
+                const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(baseFontFamily)}${
+                    variantString ? `&${variantString}` : ''
+                }`;
+                
                 const response = yield fetch(fontUrl);
                 const css = yield response.text();
                 const fontFileUrl = (_a = css.match(/url\((.*?)\)/)) === null || _a === void 0 ? void 0 : _a[1];

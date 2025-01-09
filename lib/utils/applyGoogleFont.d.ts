@@ -1,4 +1,4 @@
-import React from 'react';
-import { TextProps } from 'react-native';
-declare const applyGoogleFont: (fontFamily: string) => (props: TextProps) => React.JSX.Element;
-export default applyGoogleFont;
+declare function loadFont(fontFamily: string): Promise<void>;
+export declare function useFont(fontFamily: string): boolean;
+export default useFont;
+export { loadFont };
